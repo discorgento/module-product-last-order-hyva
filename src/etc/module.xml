@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- 
+/**
+ *  Copyright © Discorgento. All rights reserved.
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Discorgento_ProductLastOrderHyva">
+        <sequence>
+            <module name="Discorgento_ProductLastOrder"/>
+        </sequence>
+    </module>
+</config>

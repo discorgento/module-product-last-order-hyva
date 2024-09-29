@@ -1,0 +1,96 @@
+<?php
+/**
+ *  Copyright © Discorgento. All rights reserved.
+ */
+
+declare(strict_types=1);
+?>
+
+<div x-data="lastOrderComponent" x-cloak x-init="init" x-show="isVisible" 
+     class="border-l-4 border-gray-300 border border-l-12 border-primary rounded-lg flex mb-2 p-4">
+    <div class="last-order-container flex items-start">
+        <div class="text-white rounded-full flex items-center justify-center w-6 h-6 text-sm font-bold mr-2 bg-primary">i</div>
+        <div class="last-order">
+            <p class="mb-0">
+                <span class="last-order-product text-lg font-semibold leading-6"><?= __('You last purchased this product on'); ?></span>
+                <span class="last-order-date text-lg font-semibold leading-6" x-text="orderDate"></span>
+            </p>
+            <a :href="orderLink" class="text-primary hover:text-secondary last-order-link-container">
+                <span class="last-order-link"><?= __('View this order'); ?></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('lastOrderComponent', () => ({
+            isVisible: false,
+            orderLink: '',
+            orderDate: '',
+            cacheKey: '',
+            customerId: "<?= /* @noEscape */ $block->getCustomerId(); ?>",
+            productId: "<?= /* @noEscape */ $block->getProductId(); ?>",
+
+            init() {
+                this.cacheKey = `customer_${this.customerId}_product_${this.productId}_purchase`;
+                if (this.checkData()) this.checkCacheOrMakeRequest();
+            },
+
+            checkData() {
+                return !!(this.customerId && this.productId);
+            },
+
+            checkCacheOrMakeRequest() {
+                const cachedResponse = localStorage.getItem(this.cacheKey);
+                if (cachedResponse) {
+                    this.handleResponse(JSON.parse(cachedResponse));
+                } else {
+                    this.makeGraphQLRequest();
+                }
+            },
+
+            makeGraphQLRequest() {
+                const query = `
+                    query CheckCustomerProductPurchase($customerId: String!, $productId: String!) {
+                        hasCustomerPurchasedProduct(customerId: $customerId, productId: $productId) {
+                            hasPurchased
+                            orderLink
+                            orderDate
+                        }
+                    }`;
+
+                this.performRequest(query, { customerId: this.customerId, productId: this.productId });
+            },
+
+            performRequest(query, variables) {
+                fetch('/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, variables }),
+                })
+                .then(response => response.json())
+                .then(data => this.handleResponse(data))
+                .catch(this.handleError);
+            },
+
+            handleResponse(response) {
+                const purchaseData = response.data?.hasCustomerPurchasedProduct;
+                if (purchaseData?.hasPurchased) {
+                    this.updateUI(purchaseData);
+                    localStorage.setItem(this.cacheKey, JSON.stringify(response));
+                }
+            },
+
+            updateUI({ orderLink, orderDate }) {
+                this.isVisible = true;
+                this.orderLink = orderLink;
+                this.orderDate = orderDate;
+            },
+
+            handleError(error) {
+                console.error(error);
+            },
+        }));
+    });
+</script>

@@ -1,0 +1,26 @@
+{
+  "name": "discorgento/module-product-last-order-hyva",
+  "description": "Product Last Order Hyva",
+  "type": "magento2-module",
+  "license": "GPL-3.0",
+  "require": {
+      "php": ">=8.0",
+      "magento/framework": "*",
+      "discorgento/module-product-last-order": "^1.0"
+  },
+  "authors": [
+      {
+          "name": "Discorgento",
+          "email": "hi@discorgento.com"
+      }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+      "files": [
+          "src/registration.php"
+      ],
+      "psr-4": {
+          "Discorgento\\ProductLastOrder\\": "src/"
+      }
+  }
+}
